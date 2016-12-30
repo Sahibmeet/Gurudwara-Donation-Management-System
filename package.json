@@ -1,0 +1,17 @@
+{
+  "name": "GurdwaraDNS",
+  "version": "1.0.0",
+  "description": "A donation management system designed to keep track of donations.",
+  "author": "A. Singh",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "x",
+    "morgan": "^1.6.1",
+    "express-session" : "x",
+    "uuid" : "x",
+    "passport-auth0" :"x",
+    "passport" : "x",
+    "auth0-js":"x",
+    "mongoose" :"x"
+  }
+}
