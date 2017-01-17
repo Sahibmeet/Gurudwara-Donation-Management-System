@@ -1,0 +1,26 @@
+username
+password
+
+- Regular
+  - Can request a receipt be made void
+- Admin
+  - Approves request for voiding
+
+
+
+Change Issue Receipt name
+
+User search for filling up receipt form
+change delete to void receipt
+
+no search by receipt Number
+
+
+- User based report for a certain time span 
+- Anonymous 
+	or required name 
+	amount required
+
+- Username and passwords for 5 Reg and 1 Admin account 
+
+- To receipt data add cheque number and date for payment type 

@@ -1,0 +1,108 @@
+<script src="//cdn.auth0.com/w2/auth0-7.6.0.min.js"></script>
+<script type="text/javascript">
+    var auth0 = new Auth0({
+        domain:      'gurdwara.auth0.com',
+        callbackURL: 'http://localhost:3001/loggedin',
+        clientID:    '8g20FY6KA6gHcn19fL3Ll7509sZdKDw7'
+    });
+
+    function post(path, params, method) {
+        method = method || "post"; // Set method to post by default if not specified.
+
+        // The rest of this code assumes you are not using a library.
+        // It can be made less wordy if you use one.
+        var form = document.createElement("form");
+        form.setAttribute("method", method);
+        form.setAttribute("action", path);
+
+        for(var key in params) {
+            if(params.hasOwnProperty(key)) {
+                var hiddenField = document.createElement("input");
+                hiddenField.setAttribute("type", "hidden");
+                hiddenField.setAttribute("name", key);
+                hiddenField.setAttribute("value", params[key]);
+
+                form.appendChild(hiddenField);
+             }
+        }
+
+        document.body.appendChild(form);
+        console.log(form);
+        form.submit();
+    }
+
+    // // callback redirect?
+    // var result = auth0.parseHash(window.location.hash);
+    // if (result && result.idToken) {
+    //     // This will execute on redirect callback
+    //     auth0.getUserInfo(result.accessToken, function (err, profile) {
+    //       window.location.hash = "";
+    //       if (err) {
+    //         return alert('error fetching profile: ' + JSON.stringify(err));
+    //       }
+    //         alert('hello ' + profile.name);
+    //     });
+    // } else if (result && result.error) {
+    //   alert('error at login: ' + result.error)
+    // }
+</script>
+
+
+<div class="row">
+<fieldset class="fieldset">
+<legend><h3>Login</h3></legend>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Email address: </label></div><div class="small-8 columns"><input type="text" class="login-username" placeholder="address@email.com"></div><div class="small-2 columns"></div></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Password: </label></div><div class="small-8 columns"><input type="password" class="login-password" placeholder="aaaaaaaaa"></div><div class="small-2 columns"></div></div>
+  <div class="small-2 columns"><input class="large button signup-db"style="float:right;" type="submit" value="Login" onclick="logindb()"></div>
+</fieldset>
+</div>
+<script type="text/javascript">
+    function logindb(){
+        auth0.login({
+            connection: 'Username-Password-Authentication',
+            username: $('.login-username').val(),
+            password: $('.login-password').val()
+        }
+        , function (err, result) {
+          if (err) return alert('Something went while Logging in. Please Try again.');
+          auth0.getUserInfo(result.accessToken, function (err, profile) {
+            if (err) {
+              return alert('error fetching profile: ' + JSON.stringify(err));
+            }
+            post("http://localhost:3001/loggedin",{token:result.accessToken, name: profile.name, clientid: profile.user_id})
+          });
+        }
+        );
+    }
+</script>
+
+<!-- <div class="row">
+<fieldset class="fieldset">
+<legend><h3>Sign Up</h3></legend>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Email address: </label></div><div class="small-8 columns"><input type="text" class="signup-username" placeholder="address@email.com"></div><div class="small-2 columns"></div></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Password: </label></div><div class="small-8 columns"><input type="password" class="signup-password" placeholder="aaaaaaaaa"></div><div class="small-2 columns"></div></div>
+  <div class="small-2 columns"><input class="large button signup-db"style="float:right;" type="submit" value="Sign Up" onclick="signupdb()"></div>
+</fieldset>
+</div>
+<script type="text/javascript">
+    function signupdb(){
+        auth0.signup({
+            connection: 'Username-Password-Authentication',
+            username: $('.signup-username').val(),
+            password: $('.signup-password').val(),
+            sso: true,
+            popup: true,
+            auto_login: true
+        }
+        , function (err, result) {
+          if (err) return alert('Something went while Logging in. Please Try again.');
+          auth0.getUserInfo(result.accessToken, function (err, profile) {
+            if (err) {
+              return alert('error fetching profile: ' + JSON.stringify(err));
+            }
+            post("http://localhost:3001/loggedin",{token:result.accessToken, name: result.name, clientid: result.clientID})
+          });
+        }
+        );
+    }
+</script> -->
