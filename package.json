@@ -12,6 +12,7 @@
     "passport-auth0" :"x",
     "passport" : "x",
     "auth0-js":"x",
-    "mongoose" :"x"
+    "mongoose" :"x",
+    "aws-sdk" : "x"
   }
 }

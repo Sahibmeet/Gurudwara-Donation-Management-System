@@ -1,0 +1,350 @@
+<div class="row donationInfo">
+  <fieldset class="fieldset">
+    <legend><h3>Donator Information</h3></legend>
+      <div class="row">
+        <div class="medium-2 columns"><label>Salutation: </label></div>
+        <div class="medium-2 columns"><input type="radio" name="salutation" value="Mr" checked><label>Mr.</label></div>
+        <div class="medium-2 columns"><input type="radio" name="salutation" value="Mrs"><label>Mrs.</label></div>
+        <div class="medium-2 columns"><input type="radio" name="salutation" value="Miss"><label>Miss.</label></div>
+        <div class="medium-4 columns"></div>
+      </div>
+
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>Name: </label>
+        </div>
+        <div class="medium-10 columns">
+          <input type="text" id="name" placeholder="Ajit Singh" style="text-transform: capitalize;">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>Apartment: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="apt" placeholder="302-A">
+        </div>
+        <div class="medium-2 columns">
+          <label>Street Address: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="street"  placeholder="581 Peter Robertson Blvd." style="text-transform: capitalize;">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>City: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="city" placeholder="Toronto" style="text-transform: capitalize;">
+        </div>
+        <div class="medium-2 columns">
+          <label>Country: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="country"  value="Canada" placeholder="Canada" style="text-transform: capitalize;">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>Postal Code: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="postal" placeholder="M9M9M9" style="text-transform: uppercase;">
+        </div>
+        <div class="medium-2 columns">
+          <label>Telephone: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="phone"  placeholder="9057992682">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>Email: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="email" placeholder="example@domain.com">
+        </div>
+        <div class="medium-2 columns">
+          <label>Donator Status: </label>
+        </div>
+        <div class="medium-4 columns">
+          <p id="donatorStatus">New Donator</p>
+        </div>
+      </div>
+  </fieldset>
+  <fieldset class="fieldset">
+    <legend><h3>Donation Information</h3></legend>
+      <div class="row">
+        <div class="medium-2 columns">
+          <label>Amount Text: </label>
+        </div>
+        <div class="medium-4 columns">
+          <input type="text" id="amount" placeholder="One hundred and eighty nine cents" style="text-transform: capitalize;">
+        </div>
+
+        <div class="medium-1 columns">
+          <label>Dollar: </label>
+        </div>
+        <div class="medium-2 columns">
+          <input type="text" id="dollars" placeholder="100">
+        </div>
+        <div class="medium-1 columns">
+          <label>Cents: </label>
+        </div>
+        <div class="medium-2 columns">
+          <input type="text" id="cents" value="00">
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="medium-2 columns"><label>Donation For: </label></div>
+        <div class="medium-2 columns"><input type="radio" name="donationtype" value="donation" checked><label>Donation</label></div>
+        <div class="medium-2 columns"><input type="radio" name="donationtype" value="parshad"><label>Parshad</label></div>
+        <div class="medium-2 columns"><input type="radio" name="donationtype" value="langar"><label>Langar</label></div>
+        <div class="medium-2 columns"><input type="radio" name="donationtype" value="buildingFund"><label>Building Fund</label></div>
+        <div class="medium-2 columns"></div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="medium-2 columns"><label>Payment Type: </label></div>
+        <div class="medium-2 columns"><input type="radio" name="paymenttype" value="Cash" checked><label>Cash</label></div>
+        <div class="medium-2 columns"><input type="radio" name="paymenttype" value="Credit Card"><label>Credit Card</label></div>
+        <div class="medium-6 columns">
+          <div class="row">
+            <input type="radio" name="paymenttype" value="Cheque"><label>Cheque</label>
+          </div>
+          <div class="row">
+            <div class="medium-2 columns"><label>Cheque Number:</label></div>
+            <div class="medium-4 columns"><input type="text" id="chequeNumber" placeholder="98767"></div>
+            <div class="medium-2 columns"><label>Cheque Date:</label></div>
+            <div class="medium-4 columns"><input type="text" id="chequeDate" placeholder="Feb 12, 2018"></div>
+          </div>
+        </div>
+      </div>
+  </fieldset>
+  <div class="row">
+    <div class="large-8 columns" id="errorDisplay" style="color:red;"></div>
+    <div class="large-4 columns"><input class="large button"style="float:right;" type="submit" value="Issue" onclick="issueReceipt()"></div>
+  </div>
+
+  <div id="myModal" class="reveal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <div id="modalStuff"></div>
+  </div>
+
+  <script>
+    String.prototype.capitalizeFirstLetter = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+
+    window.onload = function() {
+      updateVals()
+    };
+
+    function validationCheck(){
+      var validationTestText = '<p>Please fix the following:</p><ul>';
+      var allGood = true;
+      // var salutation = document.querySelector('input[name="salutation"]:checked').value;
+      var name = document.getElementById('name').value;
+      if(name == ""){
+        allGood = false;
+        validationTestText += '<li>Name cannot be empty.</li>';
+      }
+
+      var street = document.getElementById('street').value;
+      if(street == ""){
+        allGood = false;
+        validationTestText += '<li>Street Name cannot be empty.</li>';
+      }
+
+      var city = document.getElementById('city').value;
+      if(city == ""){
+        allGood = false;
+        validationTestText += '<li>City cannot be empty.</li>';
+      }
+
+      var country = document.getElementById('country').value;
+      if(country == ""){
+        allGood = false;
+        validationTestText += '<li>Country cannot be empty.</li>';
+      }
+
+      var postal = document.getElementById('postal').value;
+      if(postal == ""){
+        allGood = false;
+        validationTestText += '<li>Postal Code cannot be empty.</li>';
+      }
+
+      var phone = document.getElementById('phone').value;
+      if(phone == "" || !(phone.match(/^\d+$/))){
+        allGood = false;
+        validationTestText += '<li>Phone Number cannot be empty, or contain any thing other than numbers.</li>';
+      }
+
+      var dollars = document.getElementById('dollars').value;
+      if(dollars == "" || !(dollars.match(/^\d+$/))){
+        allGood = false;
+        validationTestText += '<li>Dollar Amount cannot be empty, or have anthing other than numbers in it.</li>';
+      }
+      var cents = document.getElementById('cents').value;
+      if(dollars == "" || !(cents.match(/^\d+$/)) || cents > 100){
+        allGood = false;
+        validationTestText += '<li>Cents Amount cannot be empty, have anthing other than numbers in it, or be greater than 100.</li>';
+      }
+
+      var paymentType = document.querySelector('input[name="paymenttype"]:checked').value;
+
+      if(paymentType == 'Cheque'){
+        var chequeNumber = document.getElementById('chequeNumber').value;
+        if(chequeNumber == ""){
+          allGood = false;
+          validationTestText += '<li>Cheque Number cannot be empty if cheque is used to pay.</li>';
+        }
+        var chequeDate = document.getElementById('chequeDate').value;
+        if(chequeNumber == ""){
+          allGood = false;
+          validationTestText += '<li>Cheque Date cannot be empty if cheque is used to pay.</li>';
+        }
+      }
+
+      validationTestText += '</ul>'
+
+      if(!allGood){
+        document.getElementById("errorDisplay").innerHTML = validationTestText;
+        return allGood;
+      }else{
+        document.getElementById("errorDisplay").innerHTML = ""
+        return allGood;
+      }
+    }
+
+    function issueReceipt(){
+
+      var check = validationCheck();
+      if(check){
+        var salutation = document.querySelector('input[name="salutation"]:checked').value;
+        var name = document.getElementById('name').value;
+        var apt = document.getElementById('apt').value;
+        var street = document.getElementById('street').value;
+        var city = document.getElementById('city').value;
+        var country = document.getElementById('country').value;
+        var postal = document.getElementById('postal').value;
+        var phone = document.getElementById('phone').value;
+        var email = document.getElementById('email').value;
+
+        var amountText = document.getElementById('amount').value;
+        var dollars = document.getElementById('dollars').value;
+        var cents = document.getElementById('cents').value;
+        var donationType = document.querySelector('input[name="donationtype"]:checked').value;
+        var paymentType = document.querySelector('input[name="paymenttype"]:checked').value;
+        var chequeNumber = document.getElementById('chequeNumber').value;
+        var chequeDate = document.getElementById('chequeDate').value;
+
+        var confirmText = '<p>Are you sure of the details below:<br><br>';
+
+        confirmText += 'Name: ' + salutation + " "+ name + '<br><br>'
+        confirmText += 'Address: '
+        if(apt !== ""){
+          confirmText += apt + ', '
+        }
+        confirmText += street + ', ' + city + ', ' + country + ' ' + postal + '<br>'
+        confirmText += 'Phone: ' + phone + " <br>Email: "+ email + '<br><br>'
+
+        confirmText += 'Amount: ' + amountText + ' ($' + dollars + '.'+cents+')<br>'
+
+        confirmText += '<br> Donation For: ' + donationType + '<br><br>'
+        confirmText += 'Payment Type: ' + paymentType + '<br>'
+
+        if(paymentType == 'Cheque'){
+            confirmText += 'Cheque Number: ' + chequeNumber + ' <br>Cheque Date: '+chequeDate+'<br></p>'
+        }
+
+        confirmText += '<h3 style="color:red; font-weight:bold;">Clicking on Confirm, issues the receipt!</h3><br>'
+
+        confirmText += '<div class="row">'
+        confirmText += '<div class="large-6 columns"><button class="button alert" onclick="$(\'#myModal\').foundation(\'close\');" style="float:center;">Change Information</button></div>'
+        confirmText += '<div class="large-6 columns"><button class="button primary" onclick="uploadReceipt()" style="float:center;">Confirm!</button></div>'
+        confirmText += '</div>'
+        document.getElementById('modalStuff').innerHTML = confirmText;
+        $('#myModal').foundation('open');
+      }
+    }
+
+    function uploadReceipt(){
+      // post to issuingReceipt
+      $('#myModal').foundation('close');
+
+      var salutation = document.querySelector('input[name="salutation"]:checked').value;
+      var name = document.getElementById('name').value;
+      var apt = document.getElementById('apt').value;
+      var street = document.getElementById('street').value;
+      var city = document.getElementById('city').value;
+      var country = document.getElementById('country').value;
+      var postal = document.getElementById('postal').value;
+      var phone = document.getElementById('phone').value;
+      var email = document.getElementById('email').value;
+      var uid = document.getElementById('uid').value;
+
+      var amountText = document.getElementById('amount').value;
+      var dollars = document.getElementById('dollars').value;
+      var cents = document.getElementById('cents').value;
+      var donationType = document.querySelector('input[name="donationtype"]:checked').value;
+      var paymentType = document.querySelector('input[name="paymenttype"]:checked').value;
+      var chequeNumber = document.getElementById('chequeNumber').value;
+      var chequeDate = document.getElementById('chequeDate').value;
+      var receiptNumber = receiptNumberCurr;
+
+      console.log({
+        salutation: salutation,
+        name: name,
+        apt: apt,
+        street: street,
+        city: city,
+        country: country,
+        postal: postal,
+        phone: phone,
+        email: email,
+        uuid: uid,
+        amountText: amountText,
+        dollars: dollars,
+        cents: cents,
+        donationType: donationType,
+        paymentType: paymentType,
+        chequeNumber: chequeNumber,
+        chequeDate: chequeDate,
+        receiptNumber: receiptNumber
+      });
+
+      post("/issuedReceipt",{
+        salutation: salutation,
+        name: name.capitalizeFirstLetter(),
+        apt: apt,
+        street: street.capitalizeFirstLetter(),
+        city: city.capitalizeFirstLetter(),
+        country: country.capitalizeFirstLetter(),
+        postal: postal.toUpperCase(),
+        phone: phone,
+        email: email,
+        uuid: uid,
+        amountText: amountText.capitalizeFirstLetter(),
+        dollars: dollars,
+        cents: cents,
+        donationType: donationType,
+        paymentType: paymentType,
+        chequeNumber: chequeNumber,
+        chequeDate: chequeDate,
+        receiptNumber: receiptNumber
+      });
+
+    }
+
+  </script>
+  <div class="row" style="height: 200px;">
+    <input style="visibility: hidden;" id="uid" value="xxxxxxxx-xxxx-4xxx">
+  </div>
+</div>

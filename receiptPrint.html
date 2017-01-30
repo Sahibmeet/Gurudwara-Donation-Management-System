@@ -1,0 +1,72 @@
+<div class="row">
+  <div class="large-2 small-3 columns"><p style="float:left;"><b>Receipt Number: </b></p></div>
+  <div class="large-10 small-9 columns"><span id="receiptNum"></span></div>
+</div>
+<div class="row">
+  <div class="large-2 small-3 columns"><p style="float:left;"><b>Date: </b></p></div>
+  <div class="large-10 small-9 columns"><span id="date"></span></div>
+</div>
+
+<br>
+
+<p>Received with thanks from: </p>
+<div class="row">
+  <div class="large-12 columns"><h3><span id="salutation"></span>. <span id="name"></span></h3></div>
+</div>
+<div class="row">
+  <div class="large-12 columns"><p><span id="streetAddress"></span><br><span id="cityCountry"></span><br><span id="postalCode"></span></p></div>
+</div>
+<div class="row">
+  <div class="large-12 columns"><p>Phone: <span id="telephone"></span> <br>Email: <span id="email"></span></p></div>
+</div>
+
+<br>
+
+<div class="row">
+  <div class="large-12 columns"><h4>The amount of <b>$<span id="dollars"></span>.<span id="cents"></span></b></h4><br><p id="amountText"></p></div>
+</div>
+
+<div class="row">
+  <div class="large-2 small-3 columns"><p><b>Payed By:</b></p></div>
+  <div class="large-10 small-9 columns"><span id="paymentType"></span></div>
+</div>
+
+<div class="row">
+  <div class="large-2 small-3 columns"><p><b>Cheque Info:</b></p></div>
+  <div class="large-10 small-9 columns"><span id="chequeInfo"></span></div>
+</div>
+
+<div class="row">
+  <div class="large-2 small-3 columns"><p><b>Donated For: </b></p></div>
+  <div class="large-10 small-9 columns"><span id="donationType"></span></span></div>
+</div>
+
+<br>
+
+<div class="row">
+  <div class="large-4 small-4 columns"><p style="text-align:left;">Registered Business Number:</p></div>
+  <div class="large-4 small-4 columns"></div>
+  <div class="large-4 small-4 columns"></div>
+</div>
+<div class="row">
+  <div class="large-4 small-4 columns"><p style="text-align:left;">80408 2394</p></div>
+  <div class="large-4 small-4 columns"></div>
+  <div class="large-4 small-4 columns"><p style="text-align:right;">___________________________________</p></div>
+</div>
+
+<div class="row">
+  <div class="large-4 small-4 columns"></div>
+  <div class="large-4 small-4 columns"></div>
+  <div class="large-4 small-4 columns"><p style="flat:right;"><span>Authorized Signature</span><br>(<span style="text-align:right;" id="clientID"></span>)</p></div>
+</div>
+
+<div class="row dontPrint">
+  <div class="large-8 columns"></div>
+  <div class="large-4 columns"><input class="large button"style="float:right;" type="submit" value="Print" onclick="window.print();window.location.replace('/');"></div>
+</div>
+
+<script>
+  window.onload = function() {
+    updateVals();
+  };
+</script>

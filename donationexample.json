@@ -1,0 +1,38 @@
+{
+  "dateTime": {
+    "S": "2017-01-09T10:45:54"
+  },
+  "receiptNumber": {
+    "N": "10001"
+  },
+  "donatorID": {
+    "N": "1001"
+  },
+  "Amount": {
+    "N": "100.3"
+  },
+  "paymentType": {
+    "S": "cash"
+  },
+  "cash": {
+    "BOOL": true
+  },
+  "cheque": {
+    "BOOL": false
+  },
+  "chequeDate": {
+    "S": "NA"
+  },
+  "chequeNumber": {
+    "S": "NA"
+  },
+  "card": {
+    "BOOL": false
+  },
+  "donationFor": {
+    "S": "Parshad"
+  },
+  "employeeNumber": {
+    "S": "5862f756fb0d036b0f7cb1ce"
+  }
+}

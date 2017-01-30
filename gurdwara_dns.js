@@ -15,6 +15,21 @@
 		var session = require('express-session')
 		const uuidV4 = require('uuid/v4');
 		var fs = require('fs');
+		var AWS = require('aws-sdk');
+
+		// setup AWS config
+		AWS.config.update({
+		    accessKeyId: "AKIAIODNRZQ4U7HO7NNA",
+		    secretAccessKey: "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",
+				region: "us-west-2"
+		});
+
+		// doc client for Dynamodb
+		var docClient = new AWS.DynamoDB.DocumentClient();
+
+
+		// setup for current account
+
 		function password_generator( len ) {
 	        var length = (len)?(len):(10);
 	        var string = "abcdefghijklmnopqrstuvwxyz"; //to upper
@@ -37,27 +52,16 @@
 	        return password;
 	    }
 
+		function sortByAttribue(arr, attribute) {
+		  return arr.sort(function(a,b) {
+		    return a[attribute] < b[attribute];
+		  });
+		}
+
 		var minsToDeleteCookieAt = 120
 
 		var sessionMongoose = require('mongoose');
 		sessionMongoose.connect('mongodb://localhost:27017/test');
-
-		var dbMongoose = require('mongo');
-		dbMongoose.connect('mongodb://localhost:27017/gurdwaraDB');
-
-		var receiptSchema = dbMongoose.Schema({receiptNum: Number,
-						amount: Number,
-						date: String,
-						type: String,
-						paymentType: String,
-						clientID: String,
-						donator: {
-							salutation: String,
-							name: String,
-							address: String,
-							city: String,
-							telephone: Number}})
-		var Receipt = mongoose.model('Receipt', receiptSchema);
 
 		var randomSecret = password_generator(40)
 		app.use(session({
@@ -74,6 +78,16 @@
 				})
 		}));
 
+		function generateUUID(){
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+			    return v.toString(16);
+			});
+		}
+
+		String.prototype.capitalizeFirstLetter = function() {
+		    return this.charAt(0).toUpperCase() + this.slice(1);
+		}
 	}
 	function addHeader(request, response, next){
 		// header portion of web page
@@ -90,13 +104,17 @@
 
 		response.write('<h3 style="text-align: center;margin: 20px auto 0;">' +  title + '</h3>');
 		response.write('<h4 style="text-align: center;margin: 0 auto 10px;">' +  tag + '</h4>');
+		response.write('<p style="text-align: center;margin: 0 auto 10px;">581 Robertson Blvd., Brampton. (Springdale) ON CANADA L6R 2H7</p>');
+		response.write('<p style="text-align: center;margin: 0 auto 10px;">Tel: 905-799-2682 / 905-494-5665</p>');
 
 		if(request.session.name !== undefined && request.session.name !== null ){
-		  response.write('<p style="text-align: right;"><strong>Logged In:</strong> ' + request.session.name + ' <a class="button alert" href= "/logout" style="color:white;">Logout</a></p>');
+			response.write('<div class="row dontPrint">');
+		  	response.write('<div class="large-6 columns"><p style="text-align: left;"><a class="button primary" href= "/">Home</a></p></div>');
+				response.write('<div class="large-6 columns"><p style="text-align: right;"><strong>Logged In:</strong> ' + request.session.name + ' <a class="button alert" href= "/logout" style="color:white;">Logout</a></p></div>');
+			response.write('</div>');
 		}
 
 		response.write('<hr>');
-		next();
 	}
 	function addFooter(request, response, next){
 		var html = fs.readFileSync('footer.html')
@@ -104,173 +122,29 @@
 		next();
 	}
 	function parseURL(request, response, next){
+		// console.log(url)
 	    //parse query parameters in URL
 		var parseQuery = true; //parseQueryStringIfTrue
 	  var slashHost = true; //slashDenoteHostIfTrue
 	  urlObj = url.parse(request.url, parseQuery , slashHost );
-
-	  for(x in urlObj.query) console.log(x + ': ' + urlObj.query[x]);
+		// console.log(urlObj)
+	  // for(x in urlObj.query) console.log(x + ': ' + urlObj.query[x]);
 		next();
 	}
 	function respondToClient(request, response, next){
 	    response.end(); //send response to client
 		//notice no call to next()
 	}
+
+	// Might not be required
 	function randomInt(low,high){
 		return Math.floor(Math.random()*(high-low+1)+low);
 	}
-}
 
-//---------------------------------------
-//	   ******** USER SEARCH **********
-//---------------------------------------
-function userSearchForm(request, response, next){
-    // handler for search POST message
-	console.log("RUNNING HANDLE SEARCH FORM");
-	console.log("SEARCH REQUEST BODY");
-	console.log(request.body);
-	console.log("END REQUEST BODY");
-	if(request.body.can == ''){
-		request.body.can = 'All';
-	}
-	if(request.body.elec == ''){
-		request.body.elec = 'All';
-	}
-	if(request.body.ride == ''){
-		request.body.ride = 'All';
-	}
-	if(request.body.prov == ''){
-		request.body.prov = 'All';
-	}
-
-	response.write('<div class="row callout secondary">');
-	console.log(request.body.can);
-	response.write('<form method="post" action="/candidateView">');
-	response.write('<legend><h3>Filter</h3></legend>');
-	response.write('<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Candidate Name: </label></div><div class="small-8 columns"><input type="text" name="can" value="'+request.body.can+'"></div><div class="small-2 columns"></div></div>');
-    response.write('<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Election: </label></div><div class="small-8 columns"><input type="text" name="elec" value="'+request.body.elec+'"></div><div class="small-2 columns"></div></div>');
-    response.write('<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Riding: </label></div><div class="small-8 columns"><input type="text" name="ride" value="'+request.body.ride+'"></div><div class="small-2 columns"></div></div>');
-    response.write('<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Province: </label></div><div class="small-8 columns"><input type="text" name="prov" value="'+request.body.prov+'"></div><div class="small-2 columns"></div>');
- 	response.write('<div class="small-2 columns"><input class="large button"style="float:right;" type="submit" value="Search"></div></div>');
- 	response.write('</form>');
-	response.write('</div>');
-
-
-	// DB CALL HERE TO GET RESULTS
-
-
-	var query = 'create table a4 AS select politicianID from a3';
-	var lastAdd = 0;
-	if(request.body.can != 'All'){
-		if(lastAdd == 0){query += ' WHERE ';}
-		query += "name='" + request.body.can + "'";
-		lastAdd = 1;
-	}
-	if(request.body.elec != 'All'){
-		if(lastAdd == 0){query += ' WHERE ';}
-		if(lastAdd == 1){query += ' AND ';}
-		query += ' elecID=' + request.body.elec;
-		lastAdd = 1;
-	}
-	if(request.body.ride != 'All'){
-		if(lastAdd == 0){query += ' WHERE ';}
-		if(lastAdd == 1){query += ' AND ';}
-		query += "ridingID='" + request.body.ride + "'";
-		lastAdd = 1;
-	}
-	if(request.body.prov != 'All'){
-		if(lastAdd == 0){query += ' WHERE ';}
-		if(lastAdd == 1){query += ' AND ';}
-		query += "Province='" + request.body.prov + "'";
-		lastAdd = 1;
-	}
-	query += ";";
-	var sql1 = 'drop table if exists a1; drop table if exists a2; drop table if exists a3; drop table if exists a4;'+
-		'create table a1 AS select politicianID, name from politician;'+
-		'create table a2 AS select politicianID, name, elecID, ridingID from contendor INNER JOIN  a1 ON contendor.polID = a1.politicianID;' +
-		'create table a3 AS select politicianID, name, elecID, a2.ridingID, Province from a2 INNER JOIN riding ON a2.ridingID = riding.ridingID;' +
-		query;
-
-	var sql2 = 'select distinct a4.politicianID,name,party,description,wikiLink,parlLink from a4 INNER JOIN politician ON a4.politicianID = politician.politicianID;';
-
-	console.log(sql1 +sql2);
-	db.run(sql1);
-	db.all(sql2, function(err, rows){
-		console.log("num of row: " + rows.length);
-		var toReturn = '';
-		for(var i=0; i<rows.length; i++){
-			toReturn += '<div class="row">';
-			toReturn += '<div class="small-6 columns">';
-		    toReturn += '<div class="small-12 columns"><strong>' + rows[i].name  + '</strong> - '+ rows[i].party +'</div>';
-		    toReturn += '<div class="row"><div class="small-6 columns">' + rows[i].wikiLink  + '</div>';
-		    toReturn += '<div class="small-6 columns">' + rows[i].parlLink  + '</div></div>';
-		   	toReturn += '</div>'
-		    toReturn += '<div class="small-4 columns">' + rows[i].description  + '</div>'
-		    toReturn += '<div class="small-2 columns"><form method="post" action="/candidateDetails">';
-		    toReturn += '<input type="text" name="canID" value="'+rows[i].politicianID+'"placeholder="Province" style="display:none;">';
-		    toReturn += '<input class="large button" style="float:right;" type="submit" value="details">';
-		    toReturn += '</form></div><hr></div>'
-		}
-		response.write(toReturn);
-		console.log('Returning...');
-    	next();
-	});
-}
-
-//---------------------------------------
-//	  ******** BILL SEARCH **********
-//---------------------------------------
-function billSearchForm(request, response, next){
-    // handler for search POST message'
-    if(request.body.bill == ''){
-		request.body.bill = 'All';
-	}
-	response.write('<div class="row callout secondary">');
-	response.write('<form method="post" action="/billView">');
-	response.write('<legend><h3>Filter</h3></legend>');
-	response.write('<div class="small-2 columns"><label for="right-label" class="text-right">Bills: </label></div><div class="small-8 columns"><input type="text" name="bill" value="'+request.body.bill+'"></div>');
-    response.write('<div class="small-2 columns"><input class="large button"style="float:right;" type="submit" value="Search"></div>');
-	response.write('<div class="large-6 columns"><input id="checkbox1" type="checkbox"><label name="passed">Show only passed Bills</label></div>');
-	response.write('</form>');
-	response.write('</div>');
-
-	// DB CALL HERE TO GET RESULTS
-
-	var sql = 'SELECT billName, passed, desc, link FROM bills';
-	var lastAdd = 0;
-	if(request.body.bill != 'All'){
-		if(lastAdd == 0){sql += ' WHERE ';}
-		sql += "billName='" + request.body.bill + "'";
-		lastAdd = 1;
-	}
-	if(request.body.passed == 1){
-		if(lastAdd == 0){sql += ' WHERE ';}
-		if(lastAdd == 1){sql += ' AND ';}
-		sql += "passed=" + request.body.passed;
-		lastAdd = 1;
-	}
-
-	console.log(sql);
-	db.all(sql, function(err, rows){
-		console.log("num of row: " + rows.length);
-		var toReturn = '';
-		for(var i=0; i<rows.length; i++){
-			toReturn += '<div class="row">';
-		    toReturn += '<div class="small-6 columns"><strong>' + rows[i].billName  + '</strong></div>';
-		    if(rows[i].passed == 1){
-		    	toReturn += '<div class="small-6 columns">Passed</div>';
-		    }else{
-		    	toReturn += '<div class="small-6 columns">Not Passed</div>';
-		    }
-		    toReturn += '</div><div class="row">';
-		    toReturn += '<div class="small-6 columns">' + rows[i].desc  + '</div>';
-		    toReturn += '<div class="small-6 columns">' + rows[i].link  + '</div>';
-		   	toReturn += '</div><hr>';
-		}
-		response.write(toReturn);
-		console.log('Returning...');
-    	next();
-	});
+	String.prototype.replaceAll = function(search, replacement) {
+	    var target = this;
+	    return target.replace(new RegExp(search, 'g'), replacement);
+	};
 }
 
 //---------------------------------------
@@ -313,25 +187,418 @@ function login(request,response,next){
 //	  ******** ISSUE RECEIPT **********
 //---------------------------------------
 function issueReceipt(request, response, next){
-	// show receipt Number
+	if(request.session.token == undefined || request.session.token == null){ login(request, response,next)}
+	else{
+		logStatus(request,response,next);
 
+		// get max receipt number +1
+		var params = {
+			TableName: 'GDS-G1-Donations',
+			AttributesToGet: ["receiptNumber"]
+		};
 
-	// load form for issuance
+		docClient.scan(params, function(err, data){
+			if(err){
+				console.error("Unable to read donations. Error JSON:", JSON.stringify(err, null, 2));
+				response.write('<h3 style="color:red;">ERROR</h3>');
+				response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+				response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+				next();
+			}else{
+				var receiptNumber = parseInt(sortByAttribue(data.Items, "receiptNumber")[0]["receiptNumber"]) + 1;
+				response.write('<div class="row">');
+				response.write('<div class="large-3 columns"><h4>Receipt Number:</h4></div><div class="large-3 columns"><h4 id="receiptNumber">' + receiptNumber + '</h4></div>');
+				response.write('<script>var receiptNumberCurr = '+receiptNumber+';</script>')
+				response.write('<div class="large-6 columns"></div>')
+				response.write('</div>');
 
+				var html  = fs.readFileSync('receiptForm.html');
+				response.write(html);
+				var postHTML = fs.readFileSync('post.html');
+				response.write(postHTML);
+				// create script for updating fields
+				response.write('<script>');
+					response.write('function updateVals(){');
+						// use uid is available
+						if(Object.keys(request.body).length === 0 && request.body.constructor === Object){
+							response.write('}</script>');
+							next();
+						}else if(request.body.uuid !== ""){
+							// get max receipt number +1
+							var params = {
+								TableName: 'GDS-G1-Donators',
+								Key: {
+									donatorUID : request.body.uuid
+								}
+							};
+							console.log('uid that issue receipt received: ' + request.body.uuid);
+							docClient.get(params, function(err, data){
+								if(err){
+									console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+									response.write('<h3 style="color:red;">ERROR</h3>');
+									response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+									response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+									next();
+								}else{
+									console.log('Item0 is: ' + JSON.stringify(data));
+											response.write('document.getElementById(\'name\').value = "'+data["Item"]["donatorName"]+"\";");
+											response.write('document.getElementById(\'apt\').value = "'+data["Item"]["addressAptNum"]+"\";");
+											response.write('document.getElementById(\'street\').value = "'+data["Item"]["addressStreet"]+"\";");
+											response.write('document.getElementById(\'city\').value = "'+data["Item"]["addressCity"]+"\";");
+											response.write('document.getElementById(\'country\').value = "'+data["Item"]["addressCountry"]+"\";");
+											response.write('document.getElementById(\'postal\').value = "'+data["Item"]["addressPostalCode"]+"\";");
+											response.write('document.getElementById(\'phone\').value = "'+data["Item"]["telephone"]+"\";");
+											response.write('document.getElementById(\'postal\').value = "'+data["Item"]["addressPostalCode"]+"\";");
+											response.write('document.getElementById(\'email\').value = "'+data["Item"]["email"]+"\";");
+											response.write('document.getElementById(\'uid\').value = "'+request.body.uuid+"\";");
+											response.write('document.getElementById(\'donatorStatus\').innerHTML = "<p>Previous Donator</p>";');
+										response.write('}');
+									response.write('</script>');
+									next();
+								}
+							});
+						}
+						else if(request.body.first !== "" || request.body.last !== "" || request.body.phone !== "" || request.body.city !== ""){
+							if(request.body.first && request.body.last){
+								response.write('document.getElementById(\'name\').value = '+request.body.first + " " + request.body.last+";");
+							}
+							else if(request.body.first){
+								response.write('document.getElementById(\'name\').value = '+request.body.first+";");
+							}
+							else if(request.body.last){
+								response.write('document.getElementById(\'name\').value = '+request.body.last+";");
+							}
+							if(request.body.phone){
+								response.write('document.getElementById(\'phone\').value = '+request.body.phone+";");
+							}
+							if(request.body.city){
+								response.write('document.getElementById(\'city\').value = '+request.body.city+";");
+							}
+								response.write('}');
+							response.write('</script>');
+							next();
+						}
 
+			}
+		});
+	}
+}
+function issuedReceipt(request, response, next){
+	console.log("\n------------------\n" + JSON.stringify(request.body) + "\n------------------\n")
+	logStatus(request, response, next);
+	// add to db
+	var salutation = request.body.salutation;
+	var name = request.body.name;
+	var apt = request.body.apt;
+	var street = request.body.street;
+	var city = request.body.city;
+	var country = request.body.country;
+	var postal = request.body.postal;
+	var phone = request.body.phone;
+	var email = request.body.email;
+	var uid = request.body.uuid;
+
+	var amountText = request.body.amountText;
+	var dollars = request.body.dollars;
+	var cents = request.body.cents;
+	var donationType = request.body.donationType;
+	var paymentType = request.body.paymentType;
+	var chequeNumber = request.body.chequeNumber;
+	var chequeDate = request.body.chequeDate;
+	var receiptNumber = request.body.receiptNumber;
+
+	if(uid == 'xxxxxxxx-xxxx-4xxx'){
+		//new client - generate uuid
+		uid = generateUUID();
+		console.log(uid);
+		// create item in donators table
+		if(apt == ""){apt="N/A";}
+		if(email == ""){email="N/A";}
+		var params = {
+    	TableName:"GDS-G1-Donators",
+			Item:{
+			  "addressAptNum": apt,
+			  "addressCity": city,
+			  "addressCountry": country,
+			  "addressPostalCode": postal,
+			  "addressStreet": street,
+			  "donatorName": name,
+			  "donatorUID": uid,
+			  "email": email,
+			  "salutation": salutation,
+			  "telephone": parseInt(phone)
+			}
+		};
+		console.log(params);
+		docClient.put(params, function(err, data) {
+		    if (err) {
+					console.error("Unable to put item in donators. Error JSON:", JSON.stringify(err, null, 2));
+					response.write('<h3 style="color:red;">ERROR</h3>');
+					response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+					response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+					next();
+		    }
+				else {
+					// store / issue receipt in donationsDB
+					var amount = parseInt(dollars) + (parseInt(cents)/100);
+					var currDate = new Date();
+					if(chequeNumber == ""){chequeNumber = "N/A";}
+					if(chequeDate == ""){chequeDate = "N/A";}
+					if(amountText == ""){amountText = "N/A"}
+					var params = {
+						TableName:"GDS-G1-Donations",
+						Item:{
+							"amount": amount,
+							"paymentType" : paymentType,
+							"chequeDate": chequeDate,
+							"chequeNumber": chequeNumber,
+							"dateTime": currDate.toISOString(),
+							"donationFor": donationType,
+							"donatorID": uid,
+							"employeeNumber": request.session.clientID,
+							"paymentType": paymentType,
+							"receiptNumber": parseInt(receiptNumber),
+							"status": "ISSUED",
+							"amountText": amountText
+						}
+					};
+					docClient.put(params, function(err, data) {
+					    if (err) {
+								console.error("Unable to put item in donations. Error JSON:", JSON.stringify(err, null, 2));
+								response.write('<h3 style="color:red;">ERROR</h3>');
+								response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+								response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+								next();
+					    }else{
+								var streetAddress = '';
+								if(apt != ""){
+									streetAddress += apt +", "
+								}
+								streetAddress += street;
+
+								var html = fs.readFileSync('receiptPrint.html');
+								response.write(html);
+								response.write('<script>');
+								response.write('function updateVals(){');
+									response.write('document.getElementById("receiptNum").innerHTML= "'+ receiptNumber +'";');
+									response.write('document.getElementById("date").innerHTML= "'+ currDate.toISOString().slice(0,10) +'";');
+									response.write('document.getElementById("salutation").innerHTML= "'+ salutation +'";');
+									response.write('document.getElementById("name").innerHTML= "'+ name +'";');
+									response.write('document.getElementById("streetAddress").innerHTML= "'+ streetAddress +'";');
+									response.write('document.getElementById("cityCountry").innerHTML= "'+ city + ", " + country +'";');
+									response.write('document.getElementById("postalCode").innerHTML= "'+ postal +'";');
+									response.write('document.getElementById("telephone").innerHTML= "'+ phone +'";');
+									response.write('document.getElementById("email").innerHTML= "'+ email +'";');
+									response.write('document.getElementById("dollars").innerHTML= "'+ dollars +'";');
+									response.write('document.getElementById("cents").innerHTML= "'+ cents +'";');
+									response.write('document.getElementById("amountText").innerHTML= "'+ amountText +'";');
+									response.write('document.getElementById("paymentType").innerHTML= "'+ paymentType +'";');
+									response.write('document.getElementById("chequeInfo").innerHTML= "'+ chequeNumber + ", " + chequeDate +'";');
+									response.write('document.getElementById("donationType").innerHTML= "'+ donationType +'";');
+									response.write('document.getElementById("clientID").innerHTML= "'+ request.session.clientID +'";');
+								response.write('}');
+								response.write('</script>');
+
+								//create updateVals
+
+								next();
+							}
+					})
+
+		    }
+		});
+	}
+	else{
+		// store / issue receipt in donationsDB
+		var amount = parseInt(dollars) + (parseInt(cents)/100);
+		var currDate = new Date();
+		if(chequeNumber == ""){chequeNumber = "NA";}
+		if(chequeDate == ""){chequeDate = "NA";}
+		if(amountText == ''){amountText = "N/A"}
+		var params = {
+			TableName:"GDS-G1-Donations",
+			Item:{
+				"amount": amount,
+				"paymentType" : paymentType,
+				"chequeDate": chequeDate,
+				"chequeNumber": chequeNumber,
+				"dateTime": currDate.toISOString(),
+				"donationFor": donationType,
+				"donatorID": uid,
+				"employeeNumber": request.session.clientID,
+				"paymentType": paymentType,
+				"receiptNumber": parseInt(receiptNumber),
+				"amountText": amountText,
+				"status": "ISSUED"
+			}
+		};
+		console.log(params);
+		docClient.put(params, function(err, data) {
+		    if (err) {
+					console.error("Unable to put item in donations. Error JSON:", JSON.stringify(err, null, 2));
+					response.write('<h3 style="color:red;">ERROR</h3>');
+					response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+					response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+					next();
+		    }else{
+					var streetAddress = '';
+					if(apt != ""){
+						streetAddress += apt +", "
+					}
+
+					streetAddress += street;
+
+					var html = fs.readFileSync('receiptPrint.html');
+					response.write(html);
+
+					response.write('<script>');
+					response.write('function updateVals(){');
+						response.write('document.getElementById("receiptNum").innerHTML= "'+ receiptNumber +'";');
+						response.write('document.getElementById("date").innerHTML= "'+ currDate.toISOString().slice(0,10) +'";');
+						response.write('document.getElementById("salutation").innerHTML= "'+ salutation +'";');
+						response.write('document.getElementById("name").innerHTML= "'+ name +'";');
+						response.write('document.getElementById("streetAddress").innerHTML= "'+ streetAddress +'";');
+						response.write('document.getElementById("cityCountry").innerHTML= "'+ city + ", " + country +'";');
+						response.write('document.getElementById("postalCode").innerHTML= "'+ postal +'";');
+						response.write('document.getElementById("telephone").innerHTML= "'+ phone +'";');
+						response.write('document.getElementById("email").innerHTML= "'+ email +'";');
+						response.write('document.getElementById("dollars").innerHTML= "'+ dollars +'";');
+						response.write('document.getElementById("cents").innerHTML= "'+ cents +'";');
+						response.write('document.getElementById("amountText").innerHTML= "'+ amountText +'";');
+						response.write('document.getElementById("paymentType").innerHTML= "'+ paymentType +'";');
+						response.write('document.getElementById("chequeInfo").innerHTML= "'+ chequeNumber + ", " + chequeDate +'";');
+						response.write('document.getElementById("donationType").innerHTML= "'+ donationType +'";');
+						response.write('document.getElementById("clientID").innerHTML= "'+ request.session.clientID +'";');
+					response.write('}');
+					response.write('</script>');
+
+					next();
+				}
+		});
+
+  }
 }
 
-function issuedReceipt(request, response, next){
-	// add to db
+//---------------------------------------
+//	  ******** FIND DONATOR **********
+//---------------------------------------
+function userinformation(request, response, next){
+	if(request.session.token == undefined || request.session.token == null){ login(request, response,next)}
+	else{
+		logStatus(request,response,next)
+		// generate users given post request and then display in table
+		// with link to issue another receipt
 
+		// console.log("\n\n " + request.body.first + ", " + request.body.last + ", " + request.body.phone + ", " + request.body.city + "\n\n");
+		var table = "GDS-G1-Donators";
+		var filterString = '';
+		var filterexpressions = {};
+		var first = false, last = false, phone = false, city = false;
 
-	// show page given status
+		if(request.body.first !== undefined && request.body.first != ""){
+			first = true;
+			filterString += 'contains(donatorName, :firstname)';
+			filterexpressions[":firstname"] =	request.body.first.capitalizeFirstLetter();
+		}
 
-	//
+		if(request.body.last !== undefined && request.body.last != ""){
+			last = true;
+			filterexpressions[":secondname"] =	request.body.last.capitalizeFirstLetter();
+			if(first == true){
+				filterString += ' OR contains(donatorName, :secondname)';
+			}else{
+				filterString += 'contains(donatorName, :secondname)';
+			}
 
+		}
 
+		if(request.body.phone !== undefined && request.body.phone != ""){
+			phone = true;
+			filterexpressions[":phone"] =	parseInt(request.body.phone);
+			if(last == true || first == true){
+				filterString += ' OR (telephone = :phone)';
+			}else{
+				filterString += '(telephone = :phone)';
+			}
+		}
 
+		if(request.body.city !== undefined && request.body.city != ""){
+			city = true;
+			filterexpressions[":city"] =	request.body.city.capitalizeFirstLetter();
+			if(first == true || last == true || phone == true){
+				filterString += ' OR contains(addressCity, :city)';
+			}else{
+				filterString += 'contains(addressCity, :city)';
+			}
+		}
 
+		if(first || last || phone || city){
+			var params = {
+			    TableName: table,
+					FilterExpression: filterString,
+				  ExpressionAttributeValues: filterexpressions
+			};
+		}
+		else{
+			var params = {
+			    TableName: table
+			};
+		}
+
+		docClient.scan(params, function(err, data) {
+		    if (err) {
+		        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+						response.write('<h3 style="color:red;">ERROR</h3>');
+						response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+						response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+						next();
+		    } else {
+						if(data.Count == 0){
+							// No results of search
+							response.write('<p>No results found. Please continue issuing receipt.</p>')
+							response.write('<button class="large button" style="float:right;" onclick="')
+							response.write('post(\'/issueReceipt\',{');
+								response.write('name:\''+request.body.first+'\',');
+								response.write('city:\''+request.body.city+'\',');
+								response.write('telephone:\''+request.body.phone+'\'');
+							response.write('})');
+							response.write('">Issue Receipt</button></td>');
+							response.write(fs.readFileSync('post.html'));
+							next();
+						}
+						else{
+							console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+							// generate HTML Table for each
+							response.write('<div class="row"><table><thead><tr><th>Donators</th><th width="150"></th></tr></thead><tbody>');
+
+							for(var i in data.Items){
+								var uid = data.Items[i]["donatorUID"];
+								var name = data.Items[i]["donatorName"];
+								var addApt = data.Items[i]["addressAptNum"];
+								var addStreet =  data.Items[i]["addressStreet"];
+								var addCity =  data.Items[i]["addressCity"];
+								var addCountry =  data.Items[i]["addressCountry"];
+								var telephoneNum =  data.Items[i]["telephone"];
+
+								response.write('<tr>');
+									response.write('<td><p>' + name + '<br>');
+									if(addApt != 'NA'){
+										response.write(addApt + ", ")
+									}
+									response.write(addStreet + '<br>' + addCity + ", " + addCountry + "<br>"+telephoneNum+'<p></td>');
+									response.write('<td><button class="large button" style="float:center;" onclick="')
+									response.write('post(\'/issueReceipt\',{uuid:\''+uid+'\'})');
+									response.write('">Issue Receipt</button></td>');
+								response.write('</tr>')
+							}
+
+							response.write('</tbody></table></div>');
+							response.write(fs.readFileSync('post.html'));
+							next();
+						}
+		    }
+		});
+	}
 }
 
 //---------------------------------------
@@ -347,7 +614,77 @@ function root(request, response, next){
 		next();
 	}
 }
-
+function printReceipt(request, response, next){
+	logStatus(request, response, next);
+	var params = {
+		TableName:"GDS-G1-Donations",
+		Key:{
+			"receiptNumber": parseInt(request.body.receiptNumber)
+		}
+	};
+	console.log(params);
+	docClient.get(params, function(err, data0) {
+		console.log(JSON.stringify(data0));
+			if (err) {
+				console.error("Unable to put item in donations. Error JSON:", JSON.stringify(err, null, 2));
+				response.write('<h3 style="color:red;">ERROR</h3>');
+				response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+				response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+				next();
+			}else{
+				/* http://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object */
+				if(Object.keys(data0).length === 0 && data0.constructor === Object){
+					// receipt not yet issued
+					console.error("Unable to put item in donations. Error JSON:", JSON.stringify(err, null, 2));
+					response.write('<h3 style="color:red;">Receipt not Issued</h3>');
+					response.write('<p>This receipt has not been issued yet.</p>');
+					response.write('<p>Please contact (819)329-3318 Immediately if you think this is an error.</p>');
+					next();
+				}else{
+					var params = {
+						TableName:"GDS-G1-Donators",
+						Key:{
+							"donatorUID": data0["Item"]["donatorID"]
+						}
+					};
+					console.log(params);
+					docClient.get(params, function(err, data1) {
+							if (err) {
+								console.error("Unable to get item from donations. Error JSON:", JSON.stringify(err, null, 2));
+								response.write('<h3 style="color:red;">ERROR</h3>');
+								response.write('<p>'+JSON.stringify(err, null, 2)+'</p>');
+								response.write('<p>Please contact (819)329-3318 Immediately.</p>');
+								next();
+							}else{
+								var html = fs.readFileSync('receiptPrint.html');
+								response.write(html);
+								response.write('<script>');
+								response.write('function updateVals(){');
+									response.write('document.getElementById("receiptNum").innerHTML= "'+ data0["Item"]["receiptNumber"] +'";');
+									response.write('document.getElementById("date").innerHTML= "'+ (new Date(data0["Item"]["dateTime"])).toISOString().slice(0,10) +'";');
+									response.write('document.getElementById("salutation").innerHTML= "'+ data1["Item"]["salutation"] +'";');
+									response.write('document.getElementById("name").innerHTML= "'+ data1["Item"]["donatorName"] +'";');
+									response.write('document.getElementById("streetAddress").innerHTML= "'+ data1["Item"]["addressStreet"] +'";');
+									response.write('document.getElementById("cityCountry").innerHTML= "'+ data1["Item"]["addressCity"] + ", " + data1["Item"]["addressCountry"] +'";');
+									response.write('document.getElementById("postalCode").innerHTML= "'+ data1["Item"]["addressPostalCode"] +'";');
+									response.write('document.getElementById("telephone").innerHTML= "'+ data1["Item"]["telephone"] +'";');
+									response.write('document.getElementById("email").innerHTML= "'+ data1["Item"]["email"] +'";');
+									response.write('document.getElementById("dollars").innerHTML= "'+ parseInt(data0["Item"]["amount"]) +'";');
+									response.write('document.getElementById("cents").innerHTML= "'+ (parseInt(((data0["Item"]["amount"])%100))) +'";');
+									response.write('document.getElementById("amountText").innerHTML= "'+ data0["Item"]["amountText"] +'";');
+									response.write('document.getElementById("paymentType").innerHTML= "'+ data0["Item"]["paymentType"] +'";');
+									response.write('document.getElementById("chequeInfo").innerHTML= "'+ data0["Item"]["chequeNumber"] + ", " + data0["Item"]["chequeDate"] +'";');
+									response.write('document.getElementById("donationType").innerHTML= "'+ data0["Item"]["donationType"] +'";');
+									response.write('document.getElementById("clientID").innerHTML= "'+ data0["Item"]["employeeNumber"] +'";');
+								response.write('}');
+								response.write('</script>');
+								next();
+							}
+					});
+				}
+			}
+	});
+}
 
 app.use(express.static(__dirname));
 app.use(parseURL);
@@ -359,12 +696,16 @@ app.get('/', root); //main page
 app.get('/login', login);
 app.post('/loggedin',loggedin);
 app.get('/logout',logout);
-app.get('/issueReceipt',issueReceipt)
-app.post('/issuedReceipt',issuedReceipt)
+
+app.post('/userinformation',userinformation);
+
+app.post('/issueReceipt',issueReceipt);
+app.post('/issuedReceipt',issuedReceipt);
+
+app.post('/printPreviousReceipt',printReceipt);
 
 app.use(addFooter);
 app.use(respondToClient);
-
 
 
 //create http-express server

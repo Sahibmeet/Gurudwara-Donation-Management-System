@@ -1,31 +1,30 @@
 <div class="row">
-<form method="post" action="/userinformation">
+<form method="post" action="/userinformation" method="post">
 <fieldset class="fieldset">
 <legend><h3>Search By Details:</h3></legend>
-<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">First Name: </label></div><div class="small-8 columns"><input type="text" name="first" placeholder="John"></div><div class="small-2 columns"></div></div>
-<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Last Name: </label></div><div class="small-8 columns"><input type="text" name="last" placeholder="Snow"></div><div class="small-2 columns"></div></div>
-<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Phone Number: </label></div><div class="small-8 columns"><input type="text" name="phone" placeholder="4164164161"></div><div class="small-2 columns"></div></div>
-<div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">City: </label></div><div class="small-8 columns"><input type="text" name="city" placeholder="Toronto"></div><div class="small-2 columns"></div>
-<div class="small-2 columns"><input class="large button"style="float:right;" type="submit" value="Search"></div>
-</fieldset>
-</form>
-</div>
-
-<div class="row">
-<form method="post" action="/receiptinformation">
-<fieldset class="fieldset">
-<legend><h3>Search By Receipt Number:</h3></legend>
-<div class="small-2 columns"><label for="right-label" class="text-right">Receipt Number: </label></div><div class="small-8 columns"><input type="text" name="receiptNum" placeholder="10001"></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">First Name: </label></div><div class="small-8 columns"><input type="text" name="first" placeholder="John" style="text-transform: capitalize;"></div><div class="small-2 columns"></div></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Last Name: </label></div><div class="small-8 columns"><input type="text" name="last" placeholder="Snow" style="text-transform: capitalize;"></div><div class="small-2 columns"></div></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Phone Number: </label></div><div class="small-8 columns"><input type="text" name="phone" placeholder="4164164161"></div><div class="small-2 columns"></div></div>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">City: </label></div><div class="small-8 columns"><input type="text" name="city" placeholder="Toronto" style="text-transform: capitalize;"></div><div class="small-2 columns"></div>
   <div class="small-2 columns"><input class="large button"style="float:right;" type="submit" value="Search"></div>
 </fieldset>
 </form>
 </div>
 
+<div class="row">
+<form method="post" action="/printPreviousReceipt" method="post">
+<fieldset class="fieldset">
+  <legend><h3>Print Previous Receipts:</h3></legend>
+  <div class="row"><div class="small-2 columns"><label for="right-label" class="text-right">Receipt Number: </label></div><div class="small-8 columns"><input type="text" name="receiptNumber" placeholder="10006"></div><div class="small-2 columns"></div></div>
+  <div class="small-2 columns"><input class="large button"style="float:right;" type="submit" value="Print"></div>
+</fieldset>
+</form>
+</div>
 
 <br><br>
 <div class="row">
 <form method="post" action="/issueReceipt" >
-<div class="large-4 columns"><input class="large button"style="float:right;" type="submit" value="Issue Receipt"></div>
-<div class="large-4 columns"><input class="large button alert"style="float:left;" type="submit" value="Delete Receipt"></div>
+<div class="large-12 columns"><input class="large button"style="float:right;" type="submit" value="Issue Receipt"></div>
+<!-- <div class="large-4 columns"><input class="large button alert"style="float:left;" type="submit" value="Delete Receipt"></div> -->
 </form>
 </div>
